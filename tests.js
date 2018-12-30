@@ -3,6 +3,7 @@ const {
   pixelHeightTransformer,
   pixelSlopeTransformer,
   createPixelFrictionAndDensityTransformer,
+  createPixelLandmarkTransformer,
 } = require('./index');
 
 const blackPixel = {
@@ -61,16 +62,32 @@ const samplePixelMetaData = {
   }
 };
 
+const sampleLandmarkMetaData = {
+  '000000': {
+    type: 'pixel',
+    key: 'hole',
+    value: true,
+  },
+  'FFFFFF': {
+    type: 'start',
+  },
+  '0000FF': {
+    type: 'pixel',
+    key: 'water',
+    value: true,
+  },
+}
+
 function testPixelHeightTransformer() {
 
   const pixelHeightLowResult = pixelHeightTransformer(blackPixel);
-  if(pixelHeightLowResult.height !== 0) {
-    throw new Error(`Lowest Result should be 0. Got: ${pixelHeightLowResult.height}`);
+  if(pixelHeightLowResult.pixel.height !== 0) {
+    throw new Error(`Lowest Result should be 0. Got: ${pixelHeightLowResult.pixel.height}`);
   }
 
   const pixelHeightHighResult = pixelHeightTransformer(whitePixel);
-  if(pixelHeightHighResult.height !== 1) {
-    throw new Error(`Highest Result should be 1. Got: ${pixelHeightHighResult.height}`);
+  if(pixelHeightHighResult.pixel.height !== 1) {
+    throw new Error(`Highest Result should be 1. Got: ${pixelHeightHighResult.pixel.height}`);
   }
 
 }
@@ -79,31 +96,40 @@ function testPixelSlopeTransformer() {
   const heightTransformedPixel = pixelHeightTransformer(sampleFlatData[1][1]);
   const pixelSlopeFlatResult = pixelSlopeTransformer(heightTransformedPixel, sampleFlatData);
 
-  if(pixelSlopeFlatResult.slopeIntensity !== 0) {
-    throw new Error(`A flat map should have zero slopeIntensity at the second pixel of the second row. Got: ${pixelSlopeFlatResult.slopeIntensity}`);
+  if(pixelSlopeFlatResult.pixel.slopeIntensity !== 0) {
+    throw new Error(`A flat map should have zero slopeIntensity at the second pixel of the second row. Got: ${pixelSlopeFlatResult.pixel.slopeIntensity}`);
   }
 
   const pixelSlopeSlopedResult = pixelSlopeTransformer(sampleSlopedData[1][1], sampleSlopedData);
 
-  if(pixelSlopeSlopedResult.slopeIntensity === 0) {
-    throw new Error(`A flat map should not have zero angleIntensity at the second pixel of the second row. Got: ${pixelSlopeSlopedResult.slopeIntensity}`);
+  if(pixelSlopeSlopedResult.pixel.slopeIntensity === 0) {
+    throw new Error(`A flat map should not have zero angleIntensity at the second pixel of the second row. Got: ${pixelSlopeSlopedResult.pixel.slopeIntensity}`);
   }
 }
 
 function testPixelFrictionAndDensityTransformer() {
 
   const transformer = createPixelFrictionAndDensityTransformer(samplePixelMetaData);
-  const blackPixelResult = transformer(sampleFlatData[0][0]);
-  if(!blackPixelResult.friction || !blackPixelResult.density) {
-    throw new Error(`A mapped pixel should have a non-zero friction and density value (based on the sample data) . Got friction:${blackPixelResult.friction} and density: ${blackPixelResult.density}`);
+  const blackPixelResult = transformer(blackPixel);
+  if(!blackPixelResult.pixel.friction || !blackPixelResult.pixel.density) {
+    throw new Error(`A mapped pixel should have a non-zero friction and density value (based on the sample data) . Got friction:${blackPixelResult.pixel.friction} and density: ${blackPixelResult.pixel.density}`);
   }
 
+}
+
+function testLandmarkMetaDataTransformer() {
+  const transformer = createPixelLandmarkTransformer(sampleLandmarkMetaData);
+  const blackPixelResult = transformer(blackPixel, {}, {});
+  if(!blackPixelResult.pixel.hole === true) {
+    throw new Error(`A black pixel should have been identified as a hole.`);
+  }
 }
 
 // Run the tests
 testPixelHeightTransformer();
 testPixelSlopeTransformer();
 testPixelFrictionAndDensityTransformer();
+testLandmarkMetaDataTransformer();
 
 console.log('Success?');
 

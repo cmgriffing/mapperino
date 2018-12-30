@@ -39,6 +39,8 @@ function mapPixelData(
   postTransformFunctions,
 ) {
 
+  let  mapMetaData = {};
+
   if(!transformFunctions) {
     transformFunctions = [pixelHeightTransformer];
   }
@@ -64,7 +66,12 @@ function mapPixelData(
       _pixel.y = pixelRowIndex;
 
       transformFunctions.forEach(function(fn) {
-        _pixel = fn(_pixel, pixels);
+        const {
+          pixel: transformedPixel,
+          mapMetaData: transformedMapMetaData
+        } = fn(_pixel, pixels, mapMetaData);
+        _pixel = transformedPixel;
+        mapMetaData = transformedMapMetaData;
       });
 
       return _pixel;
@@ -75,14 +82,22 @@ function mapPixelData(
       let _pixel = Object.assign({}, pixel);
 
       postTransformFunctions.forEach(function(fn) {
-        _pixel = fn(_pixel, transformedPixels);
+        const {
+          pixel: transformedPixel,
+          mapMetaData: transformedMapMetaData
+        } = fn(_pixel, transformedPixels, mapMetaData);
+        _pixel = transformedPixel;
+        mapMetaData = transformedMapMetaData;
       });
 
       return _pixel;
     })
   });
 
-  return mapped;
+  return {
+    pixels: mapped,
+    mapMetaData
+  };
 
 }
 
@@ -95,11 +110,14 @@ function mapPixelData(
  * returns:
  *   number (float beteen 0 and 1)
  */
-function pixelHeightTransformer(pixel, pixels) {
+function pixelHeightTransformer(pixel, pixels, mapMetaData) {
   const _pixel = Object.assign({}, pixel);
   const maxValue = 255 + 255 + 255;
   _pixel.height = (pixel.red + pixel.green + pixel.blue) / maxValue;
-  return _pixel;
+  return {
+    pixel: _pixel,
+    mapMetaData
+  };
 }
 
 function _getHeightDifferential(pixel, pixels, translateX, translateY) {
@@ -112,7 +130,7 @@ function _getHeightDifferential(pixel, pixels, translateX, translateY) {
   }
 }
 
-function pixelSlopeTransformer(pixel, pixels) {
+function pixelSlopeTransformer(pixel, pixels, mapMetaData) {
 
   const _pixel = Object.assign({}, pixel);
 
@@ -158,35 +176,84 @@ function pixelSlopeTransformer(pixel, pixels) {
 
   _pixel.slopeIntensity = (differentials[lowestCornerIndex] + differentials[oppositeCornerIndex] + diffAdjustment) / 2;
 
-  return _pixel;
+  return {
+    pixel: _pixel,
+    mapMetaData
+  };
 
 }
 
-function createPixelFrictionAndDensityTransformer(pixelMetaDataMap) {
+function createMetaDataTransformer(callback) {
+  return function(pixelMetaDataMap) {
+    const newPixelDataMap = {};
+    Object.entries(pixelMetaDataMap).map(([key, value]) => {
+      newPixelDataMap[key.toLowerCase()] = value;
+    });
 
-  const newPixelDataMap = {};
-  Object.entries(pixelMetaDataMap).map(([key, value]) => {
-    newPixelDataMap[key.toLowerCase()] = value;
-  });
+    return function(pixel, pixels, mapMetaData) {
+      let _pixel = Object.assign({}, pixel);
+      let _mapMetaData = Object.assign({}, mapMetaData);
 
-  return function(pixel, pixels) {
-    const _pixel = Object.assign({}, pixel);
+      const red = decToHex(_pixel.red);
+      const green = decToHex(_pixel.green);
+      const blue = decToHex(_pixel.blue);
 
-    const red = decToHex(_pixel.red);
-    const green = decToHex(_pixel.green);
-    const blue = decToHex(_pixel.blue);
+      const color = `${red}${green}${blue}`;
+      const colorData = newPixelDataMap[color];
 
-    const color = `${red}${green}${blue}`;
-    const colorData = newPixelDataMap[color];
+      if(colorData) {
+        const {
+          pixel: transformedPixel,
+          mapMetaData: transformedMapMetaData
+        } = callback(_pixel, colorData, _mapMetaData);
+        _pixel = transformedPixel;
+        _mapMetaData = transformedMapMetaData;
+      }
 
-    if(colorData) {
-      _pixel.friction = colorData.friction;
-      _pixel.density = colorData.density;
+      return {
+        pixel: _pixel,
+        mapMetaData: _mapMetaData
+      };
     }
-
-    return _pixel;
   }
+
 }
+
+const createPixelFrictionAndDensityTransformer = createMetaDataTransformer(function(pixel, colorData, mapMetaData) {
+  let _pixel = Object.assign({}, pixel);
+  _pixel.friction = colorData.friction;
+  _pixel.density = colorData.density;
+  return {
+    pixel: _pixel,
+    mapMetaData
+  };
+});
+
+// possible data shape
+// colorData = {
+//   type: 'pixel',
+//   key: 'water',
+//   value: true
+// }
+const createPixelLandmarkTransformer = createMetaDataTransformer(function(pixel, colorData, mapMetaData) {
+  let _pixel = Object.assign({}, pixel);
+  let _mapMetaData = Object.assign({}, mapMetaData);
+
+  switch(colorData.type) {
+    case 'start':
+      _mapMetaData.start = _pixel;
+      break;
+    case 'pixel':
+      _pixel[colorData.key] = colorData.value;
+      break;
+  }
+
+  return {
+    pixel: _pixel,
+    mapMetaData: _mapMetaData
+  };
+});
+
 
 /*
  * Args:
@@ -226,4 +293,5 @@ module.exports = {
   pixelHeightTransformer,
   pixelSlopeTransformer,
   createPixelFrictionAndDensityTransformer,
+  createPixelLandmarkTransformer,
 }
