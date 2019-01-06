@@ -4,7 +4,7 @@ const {
   pixelSlopeTransformer,
   createPixelFrictionAndDensityTransformer,
   createPixelLandmarkTransformer,
-} = require('./index');
+} = require('./lib');
 
 const blackPixel = {
   red: 0,
@@ -35,19 +35,19 @@ const sampleFlatData = function() {
 
 const sampleSlopedData = [
   [
-    { ...blackPixel, height: 0, x: 0, y: 0 },
-    { ...blackPixel, height: 0.25, x: 1, y: 0 },
-    { ...blackPixel, height: 0.5, x: 2, y: 0 },
+    { ...blackPixel, height: 0.84, x: 0, y: 0 },
+    { ...blackPixel, height: 0.85, x: 1, y: 0 },
+    { ...blackPixel, height: 0.86, x: 2, y: 0 },
   ],
   [
-    { ...blackPixel, height: 0.25, x: 0, y: 1 },
-    { ...whitePixel, height: 0.5, x: 1, y: 1 },
-    { ...blackPixel, height: 0.75, x: 2, y: 1 },
+    { ...blackPixel, height: 0.85, x: 0, y: 1 },
+    { ...whitePixel, height: 0.86, x: 1, y: 1 },
+    { ...blackPixel, height: 0.87, x: 2, y: 1 },
   ],
   [
-    { ...blackPixel, height: 0.5, x: 0, y: 2 },
-    { ...blackPixel, height: 0.75, x: 1, y: 2 },
-    { ...blackPixel, height: 1, x: 2, y: 2 },
+    { ...blackPixel, height: 0.86, x: 0, y: 2 },
+    { ...blackPixel, height: 0.87, x: 1, y: 2 },
+    { ...blackPixel, height: 0.88, x: 2, y: 2 },
   ],
 ];
 
@@ -68,15 +68,71 @@ const sampleLandmarkMetaData = {
     key: 'hole',
     value: true,
   },
-  'FFFFFF': {
+  // red
+  'FF0000': {
     type: 'start',
   },
+  // blue
   '0000FF': {
     type: 'pixel',
     key: 'water',
     value: true,
   },
-}
+};
+
+const sampleRawPixelData = [
+  [
+    {
+      red: 167,
+      green: 167,
+      blue: 167,
+    },
+    {
+      red: 168,
+      green: 168,
+      blue: 168,
+    },
+    {
+      red: 169,
+      green: 169,
+      blue: 169,
+    },
+  ],
+  [
+    {
+      red: 168,
+      green: 168,
+      blue: 168,
+    },
+    {
+      red: 169,
+      green: 169,
+      blue: 169,
+    },
+    {
+      red: 170,
+      green: 170,
+      blue: 170,
+    },
+  ],
+  [
+    {
+      red: 169,
+      green: 169,
+      blue: 169,
+    },
+    {
+      red: 170,
+      green: 170,
+      blue: 170,
+    },
+    {
+      red: 171,
+      green: 171,
+      blue: 171,
+    },
+  ],
+];
 
 function testPixelHeightTransformer() {
 
@@ -102,8 +158,10 @@ function testPixelSlopeTransformer() {
 
   const pixelSlopeSlopedResult = pixelSlopeTransformer(sampleSlopedData[1][1], sampleSlopedData);
 
+  console.log('pixelSlopedResult:', pixelSlopeSlopedResult);
+
   if(pixelSlopeSlopedResult.pixel.slopeIntensity === 0) {
-    throw new Error(`A flat map should not have zero angleIntensity at the second pixel of the second row. Got: ${pixelSlopeSlopedResult.pixel.slopeIntensity}`);
+    throw new Error(`A flat map should not have zero slopeIntensity at the second pixel of the second row. Got: ${pixelSlopeSlopedResult.pixel.slopeIntensity}`);
   }
 }
 
@@ -125,11 +183,17 @@ function testLandmarkMetaDataTransformer() {
   }
 }
 
+function testMapPixelData() {
+  const result = mapPixelData(sampleRawPixelData);
+  console.log('pixelResult', result.pixels);
+}
+
 // Run the tests
 testPixelHeightTransformer();
 testPixelSlopeTransformer();
 testPixelFrictionAndDensityTransformer();
 testLandmarkMetaDataTransformer();
+testMapPixelData();
 
 console.log('Success?');
 
