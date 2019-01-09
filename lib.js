@@ -292,10 +292,43 @@ function getSliceFromMap(start, end, pixelMap) {
 
 }
 
+function ndarrayToPixels(pixels) {
+
+  const width = pixels.shape[0];
+  const height = pixels.shape[1];
+
+  const redOffset = 0;
+  const greenOffset = 1;
+  const blueOffset = 2;
+  const alphaOffset = 3;
+
+  const outputPixels = [];
+
+  for(let x = 1; x < width - 1; ++x) {
+    for(let y = 1; y < height - 1; ++y) {
+      if(!outputPixels[y]) {
+        outputPixels[y] = [];
+      }
+
+      outputPixels[y].push({
+        red: pixels.get(x, y, redOffset),
+        green: pixels.get(x, y, greenOffset),
+        blue: pixels.get(x, y, blueOffset),
+      });
+    }
+  }
+
+  // remove null first row
+  outputPixels.shift();
+
+  return outputPixels;
+}
+
 module.exports = {
   mapPixelData,
   pixelHeightTransformer,
   pixelSlopeTransformer,
   createPixelFrictionAndDensityTransformer,
   createPixelLandmarkTransformer,
+  ndarrayToPixels,
 }
