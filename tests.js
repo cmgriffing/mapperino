@@ -4,7 +4,8 @@ const {
   pixelSlopeTransformer,
   createPixelFrictionAndDensityTransformer,
   createPixelLandmarkTransformer,
-} = require('./lib');
+  getSliceFromMap,
+} = require('./index');
 
 const blackPixel = {
   red: 0,
@@ -158,8 +159,6 @@ function testPixelSlopeTransformer() {
 
   const pixelSlopeSlopedResult = pixelSlopeTransformer(sampleSlopedData[1][1], sampleSlopedData);
 
-  console.log('pixelSlopedResult:', pixelSlopeSlopedResult);
-
   if(pixelSlopeSlopedResult.pixel.slopeIntensity === 0) {
     throw new Error(`A flat map should not have zero slopeIntensity at the second pixel of the second row. Got: ${pixelSlopeSlopedResult.pixel.slopeIntensity}`);
   }
@@ -185,7 +184,27 @@ function testLandmarkMetaDataTransformer() {
 
 function testMapPixelData() {
   const result = mapPixelData(sampleRawPixelData);
-  console.log('pixelResult', result.pixels);
+  //console.log('pixelResult', result.pixels);
+}
+
+function testGetSliceFromMap() {
+  const result = getSliceFromMap(
+    sampleSlopedData[0][0],
+    sampleSlopedData[2][2],
+    sampleSlopedData,
+  );
+
+  const expectedResult = [
+    { ...blackPixel, height: 0.84, x: 0, y: 0 },
+    { ...whitePixel, height: 0.86, x: 1, y: 1 },
+    { ...blackPixel, height: 0.88, x: 2, y: 2 },
+  ];
+
+  if(JSON.stringify(expectedResult) !== JSON.stringify(result)) {
+    console.log('expected: ', expectedResult);
+    console.log('got: ', result);
+    throw new Error('A slice should have been properly grabbed from the map');
+  }
 }
 
 // Run the tests
@@ -194,6 +213,7 @@ testPixelSlopeTransformer();
 testPixelFrictionAndDensityTransformer();
 testLandmarkMetaDataTransformer();
 testMapPixelData();
+testGetSliceFromMap();
 
 console.log('Success?');
 

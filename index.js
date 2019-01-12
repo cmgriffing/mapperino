@@ -287,9 +287,10 @@ function getSliceFromMap(start, end, pixelMap) {
   const yOrigin = start.y - (slope * start.x);
 
   return pixelMap[0].map(function(pixel) {
-    return (slope * pixel.x) + yOrigin;
+    const y = (slope * pixel.x) + yOrigin;
+    const x = pixel.x;
+    return pixelMap[y][x];
   });
-
 }
 
 function ndarrayToPixels(pixels) {
@@ -331,4 +332,5 @@ module.exports = {
   createPixelFrictionAndDensityTransformer,
   createPixelLandmarkTransformer,
   ndarrayToPixels,
+  getSliceFromMap,
 }
