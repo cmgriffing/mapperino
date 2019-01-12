@@ -289,7 +289,9 @@ function getSliceFromMap(start, end, pixelMap) {
   return pixelMap[0].map(function(pixel) {
     const y = (slope * pixel.x) + yOrigin;
     const x = pixel.x;
-    return pixelMap[y][x];
+    if(pixelMap[y]) {
+      return pixelMap[y][x];
+    }
   });
 }
 
