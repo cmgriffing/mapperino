@@ -286,12 +286,35 @@ function getSliceFromMap(start, end, pixelMap) {
 
   const yOrigin = start.y - (slope * start.x);
 
-  return pixelMap[0].map(function(pixel) {
-    const y = (slope * pixel.x) + yOrigin;
-    const x = pixel.x;
-    if(pixelMap[y]) {
-      return pixelMap[y][x];
+  let axis = pixelMap[0];
+
+  const rising = Math.abs(slope) > 1;
+
+  if(rising) {
+    axis = pixelMap;
+  }
+
+  return axis.map(function(pixel) {
+    if(rising) {
+      pixel = pixel[0];
     }
+
+    if(rising) {
+      const rawX =  (pixel.y - yOrigin) / slope;
+      const y = pixel.y;
+      const x = Math.round(rawX);
+      if(pixelMap[y]) {
+        return pixelMap[y][x];
+      }
+    } else {
+      const rawY = (slope * pixel.x) + yOrigin;
+      const y = Math.round(rawY);
+      const x = pixel.x;
+      if(pixelMap[y]) {
+        return pixelMap[y][x];
+      }
+    }
+
   });
 }
 

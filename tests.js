@@ -190,18 +190,17 @@ function testMapPixelData() {
 function testGetSliceFromMap() {
   const result = getSliceFromMap(
     sampleSlopedData[0][0],
-    sampleSlopedData[2][2],
+    sampleSlopedData[2][1],
     sampleSlopedData,
   );
 
   const expectedResult = [
     { ...blackPixel, height: 0.84, x: 0, y: 0 },
     { ...whitePixel, height: 0.86, x: 1, y: 1 },
-    { ...blackPixel, height: 0.88, x: 2, y: 2 },
+    { ...blackPixel, height: 0.87, x: 1, y: 2 },
   ];
 
   if(JSON.stringify(expectedResult) !== JSON.stringify(result)) {
-    console.log('expected: ', expectedResult);
     console.log('got: ', result);
     throw new Error('A slice should have been properly grabbed from the map');
   }
