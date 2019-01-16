@@ -279,6 +279,10 @@ const createPixelLandmarkTransformer = createMetaDataTransformer(function(pixel,
  */
 function getSliceFromMap(start, end, pixelMap) {
   const slope = (start.y - end.y) / (start.x - end.x);
+  return getSliceFromMapViaSlope(start, slope, pixelMap);
+}
+
+function getSliceFromMapViaSlope(start, slope, pixelMap) {
 
   if(!pixelMap.length || pixelMap.length < 0) {
     throw new Error('pixelMap must be an array with a non-zero length');
@@ -358,4 +362,5 @@ module.exports = {
   createPixelLandmarkTransformer,
   ndarrayToPixels,
   getSliceFromMap,
+  getSliceFromMapViaSlope,
 }
