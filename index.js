@@ -277,9 +277,21 @@ const createPixelLandmarkTransformer = createMetaDataTransformer(function(pixel,
  * returns: an array of points
  * [{  }]
  */
-function getSliceFromMap(start, end, pixelMap) {
+function getSliceFromMap(start, end, pixelMap, includeOuterValues = true) {
   const slope = (start.y - end.y) / (start.x - end.x);
-  return getSliceFromMapViaSlope(start, slope, pixelMap);
+  const slice = getSliceFromMapViaSlope(start, slope, pixelMap);
+  if(!includeOuterValues) {
+    return slice.filter((coordinates, index) => {
+      return !(
+        ((coordinates.x >= start.x && coordinates.x >= end.x) &&
+        (coordinates.y >= start.y && coordinates.y >= end.y)) ||
+        ((coordinates.x <= start.x && coordinates.x <= end.x) &&
+        (coordinates.y <= start.y && coordinates.y <= end.y))
+      )
+    })
+  } else {
+    return slice;
+  }
 }
 
 function getSliceFromMapViaSlope(start, slope, pixelMap) {
