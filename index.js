@@ -243,13 +243,27 @@ const createPixelLandmarkTransformer = createMetaDataTransformer(function(pixel,
   let _pixel = Object.assign({}, pixel);
   let _mapMetaData = Object.assign({}, mapMetaData);
 
-  switch(colorData.type) {
-    case 'start':
-      _mapMetaData.start = _pixel;
-      break;
-    case 'pixel':
-      _pixel[colorData.key] = colorData.value;
-      break;
+  if (colorData.types.pixel) {
+    _pixel[colorData.pixelKey] = colorData.pixelValue;
+  }
+
+  if (colorData.types.meta) {
+    if(colorData.metaType === 'array') {
+
+      if(!_mapMetaData[colorData.metaKey]) {
+        _mapMetaData[colorData.metaKey] = [];
+      }
+      _mapMetaData[colorData.metaKey].push(_pixel);
+
+    } else if (colorData.metaType === 'value') {
+
+      _mapMetaData[colorData.metaKey] = colorData.metaValue;
+
+    } else if (colorData.metaType === 'pixel') {
+
+      _mapMetaData[colorData.metaKey] = _pixel;
+
+    }
   }
 
   return {

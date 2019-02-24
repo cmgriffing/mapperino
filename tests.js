@@ -65,19 +65,31 @@ const samplePixelMetaData = {
 
 const sampleLandmarkMetaData = {
   '000000': {
-    type: 'pixel',
-    key: 'hole',
-    value: true,
+    types: {
+      pixel: true,
+      meta: true,
+    },
+    pixelKey: 'hole',
+    pixelValue: true,
+    metaType: 'array',
+    metaKey: 'hole',
+    metaValue: true
   },
   // red
   'FF0000': {
-    type: 'start',
+    types: {
+      meta: true,
+    },
+    metaKey: 'start',
+    metaType: 'pixel'
   },
   // blue
   '0000FF': {
-    type: 'pixel',
-    key: 'water',
-    value: true,
+    types: {
+      pixel: true,
+    },
+    pixelKey: 'water',
+    pixelValue: true,
   },
 };
 
