@@ -281,14 +281,16 @@ function getSliceFromMap(start, end, pixelMap, includeOuterValues = true) {
   const slope = (start.y - end.y) / (start.x - end.x);
   const slice = getSliceFromMapViaSlope(start, slope, pixelMap);
   if(!includeOuterValues) {
-    return slice.filter((coordinates, index) => {
-      return !(
-        ((coordinates.x >= start.x && coordinates.x >= end.x) &&
-        (coordinates.y >= start.y && coordinates.y >= end.y)) ||
-        ((coordinates.x <= start.x && coordinates.x <= end.x) &&
-        (coordinates.y <= start.y && coordinates.y <= end.y))
-      )
-    })
+    return slice
+      .filter(coordinates => !!coordinates)
+      .filter((coordinates, index) => {
+        return !(
+          ((coordinates.x >= start.x && coordinates.x >= end.x) &&
+          (coordinates.y >= start.y && coordinates.y >= end.y)) ||
+          ((coordinates.x <= start.x && coordinates.x <= end.x) &&
+          (coordinates.y <= start.y && coordinates.y <= end.y))
+        )
+      })
   } else {
     return slice;
   }
