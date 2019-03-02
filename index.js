@@ -223,10 +223,8 @@ function createMetaDataTransformer(callback) {
 
 }
 
-const createPixelFrictionAndDensityTransformer = createMetaDataTransformer(function(pixel, colorData, mapMetaData) {
-  let _pixel = Object.assign({}, pixel);
-  _pixel.friction = colorData.friction;
-  _pixel.density = colorData.density;
+const createPixelMetadataTransformer = createMetaDataTransformer(function(pixel, colorData, mapMetaData) {
+  const _pixel = Object.assign({}, pixel, colorData);
   return {
     pixel: _pixel,
     mapMetaData
@@ -386,7 +384,7 @@ module.exports = {
   mapPixelData,
   pixelHeightTransformer,
   pixelSlopeTransformer,
-  createPixelFrictionAndDensityTransformer,
+  createPixelMetadataTransformer,
   createPixelLandmarkTransformer,
   ndarrayToPixels,
   getSliceFromMap,
